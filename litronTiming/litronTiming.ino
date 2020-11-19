@@ -1,7 +1,14 @@
+#include <FastGPIO.h>
+#include <util/delay.h>
+
+
 // define the flag - set to false at start, variables changed in interrupt must be volatile
 volatile boolean PassThruMode = false;
 
+// pulse width
+int pulseWidth = 0;
 
+// set the interrupt pin
 int interruptPin = 2;
 
 // set one input and one output for the LAMP SYNC signal
@@ -12,15 +19,37 @@ void setup() {
   // put your setup code here, to run once:
 
   // set the interrupt PIN to 2
-  pinMode(interruptPin, INPUT);
+  //pinMode(interruptPin, INPUT);
+
+  // set fastGPIO
+  FastGPIO::Pin<2>::setInput();
 
   // set the pinModes for LAMP SYNC signal
-  pinMode(inputLamp, INPUT);
-  pinMode(outputLamp, OUTPUT);
+  //pinMode(inputLamp, INPUT);
+  //pinMode(outputLamp, OUTPUT);
+
+  // set fastGPIO
+  FastGPIO::Pin<3>::setInput();
+  FastGPIO::Pin<9>::setOutput(LOW);
   
   // attach the interrupt function to interruptPin - has to be set to CHANGE
   attachInterrupt(digitalPinToInterrupt(interruptPin), gate, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(3), output, RISING);
 
+
+}
+
+void output() {
+  
+      if(PassThruMode) {
+
+        FastGPIO::Pin<9>::setOutputValueHigh();
+        _delay_us(10);
+        FastGPIO::Pin<9>::setOutputValueLow();
+
+        
+      }
+  
 }
 
 void gate() {
@@ -29,15 +58,14 @@ void gate() {
   // rising or falling
 
   // DO is rising branch
-    if (digitalRead(interruptPin) == HIGH) {
+    if (FastGPIO::Pin<2>::isInputHigh()) {
 
       // redirect the LAMP SYNC signal to output - use a flag
       PassThruMode = true;
     
     }
 
-
-    else if (digitalRead(interruptPin) == LOW)  {
+    else {
       
       // stop redirecting the LAMP SYNC to output - use a flag
       PassThruMode = false;
@@ -49,8 +77,30 @@ void gate() {
 void loop() {
   // put your main code here, to run repeatedly
   // depending on the value of the flag, redirect LAMP SYNC to output
+
+/*
     if(PassThruMode) {
-    digitalWrite(outputLamp, digitalRead(inputLamp));
+
+    // fast GPIO read value of the input and according to that set LAMP SYNC - HIGH OR LOW
+    bool inputHigh = FastGPIO::Pin<8>::isInputHigh();
+
+    // try pulseIn
+
+    if (inputHigh) {
+      
+        FastGPIO::Pin<9>::setOutputValueHigh();
+        _delay_us(10);
+        inputHigh = false;
+      
+    }
+
+    else {
+      
+        FastGPIO::Pin<9>::setOutputValueLow();     
+        
+    }
+      
+    //digitalWrite(outputLamp, digitalRead(inputLamp));
   }
 
   else {
@@ -58,5 +108,5 @@ void loop() {
     digitalWrite(outputLamp, LOW);
     
   }
-
+*/
 }
