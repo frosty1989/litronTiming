@@ -1,6 +1,19 @@
 #include <FastGPIO.h>
 #include <util/delay.h>
 
+// pin switch 
+int switchPin = 12;
+
+// helpers for the switch input - current and previous reading state
+int reading;           // the current reading from the input pin
+int previous = LOW;    // the previous reading from the input pin
+
+// times for switch debouncing
+// the follow variables are long's because the time, measured in miliseconds,
+// will quickly become a bigger number than can be stored in an int.
+long time = 0;         // the last time the output pin was toggled
+long debounce = 200;   // the debounce time, increase if the output flickers
+
 
 // define the flag - set to false at start, variables changed in interrupt must be volatile
 volatile boolean PassThruMode = false;
@@ -75,38 +88,7 @@ void gate() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly
-  // depending on the value of the flag, redirect LAMP SYNC to output
 
-/*
-    if(PassThruMode) {
+  // in the main code, only the switch will be handled
 
-    // fast GPIO read value of the input and according to that set LAMP SYNC - HIGH OR LOW
-    bool inputHigh = FastGPIO::Pin<8>::isInputHigh();
-
-    // try pulseIn
-
-    if (inputHigh) {
-      
-        FastGPIO::Pin<9>::setOutputValueHigh();
-        _delay_us(10);
-        inputHigh = false;
-      
-    }
-
-    else {
-      
-        FastGPIO::Pin<9>::setOutputValueLow();     
-        
-    }
-      
-    //digitalWrite(outputLamp, digitalRead(inputLamp));
-  }
-
-  else {
-
-    digitalWrite(outputLamp, LOW);
-    
-  }
-*/
 }
