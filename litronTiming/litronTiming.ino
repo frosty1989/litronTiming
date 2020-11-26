@@ -21,25 +21,18 @@ volatile boolean PassThruMode = false;
 // pulse width
 int pulseWidth = 0;
 
-// set the interrupt pin
+// set the interrupt pin  for gate
 int interruptPin = 2;
 
 // set one input and one output for the LAMP SYNC signal
-int inputLamp = 8;
+int inputLamp = 3;
 int outputLamp = 9;
 
 void setup() {
   // put your setup code here, to run once:
 
-  // set the interrupt PIN to 2
-  //pinMode(interruptPin, INPUT);
-
-  // set fastGPIO
+  // set fastGPIO to gate pin
   FastGPIO::Pin<2>::setInput();
-
-  // set the pinModes for LAMP SYNC signal
-  //pinMode(inputLamp, INPUT);
-  //pinMode(outputLamp, OUTPUT);
 
   // set fastGPIO
   FastGPIO::Pin<3>::setInput();
@@ -47,7 +40,9 @@ void setup() {
   
   // attach the interrupt function to interruptPin - has to be set to CHANGE
   attachInterrupt(digitalPinToInterrupt(interruptPin), gate, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(3), output, RISING);
+  
+  // 3 this is the interrupt pin for the LAMP SYNC signal
+  attachInterrupt(digitalPinToInterrupt(inputLamp), output, RISING);
 
 
 }
@@ -55,7 +50,8 @@ void setup() {
 void output() {
   
       if(PassThruMode) {
-
+        
+        // I think I cannot use the pin variable here
         FastGPIO::Pin<9>::setOutputValueHigh();
         _delay_us(10);
         FastGPIO::Pin<9>::setOutputValueLow();
