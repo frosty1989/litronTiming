@@ -4,16 +4,8 @@
 // pin switch 
 int switchPin = 12;
 
-// helpers for the switch input - current and previous reading state
-int reading;           // the current reading from the input pin
-int previous = LOW;    // the previous reading from the input pin
-
-// times for switch debouncing
-// the follow variables are long's because the time, measured in miliseconds,
-// will quickly become a bigger number than can be stored in an int.
-long time = 0;         // the last time the output pin was toggled
-long debounce = 200;   // the debounce time, increase if the output flickers
-
+// swichFlag for interrupts - it does not matter how you initialize it
+volatile boolean switchFlagOneHz = false;
 
 // define the flag - set to false at start, variables changed in interrupt must be volatile
 volatile boolean PassThruMode = false;
@@ -34,6 +26,9 @@ int outputLamp = 9;
 void setup() {
   // put your setup code here, to run once:
 
+  // set the internal pull up resistor, unpressed switch is HIGH
+  pinMode(switchPin, INPUT_PULLUP); 
+
   // set fastGPIO to gate pin
   FastGPIO::Pin<2>::setInput();
 
@@ -53,12 +48,29 @@ void setup() {
 void output() {
   
       if(PassThruMode) {
+
+        // here comes the 1 Hz or 10 Hz selector
+
+        // 10 Hz
+        if(switchFlagOneHz == false) {
         
-        // I think I cannot use the pin variable here
+          // I think I cannot use the pin variable here
+          FastGPIO::Pin<9>::setOutputValueHigh();
+          _delay_us(10);
+          FastGPIO::Pin<9>::setOutputValueLow();
+
+        }
+
+        else if(switchFlagOneHz == true) {
+          
+        // output only one pulse and set passThruMode to false
         FastGPIO::Pin<9>::setOutputValueHigh();
         _delay_us(10);
-        FastGPIO::Pin<9>::setOutputValueLow();
+        FastGPIO::Pin<9>::setOutputValueLow();     
 
+        PassThruMode = false;
+          
+        }
         
       }
   
@@ -78,13 +90,14 @@ void gate() {
       while (!FastGPIO::Pin<2>::isInputHigh()) {
           // Do nothing
       }
-      and directly after 
+      // and directly after set  PassThruMode = true
 
       // redirect the LAMP SYNC signal to output - use a flag
       PassThruMode = true;
     
     }
 
+    // falling branch
     else {
       
       // stop redirecting the LAMP SYNC to output - use a flag
@@ -96,6 +109,18 @@ void gate() {
 
 void loop() {
 
-  // in the main code, only the switch will be handled
+  // unpressed switch is HIGH --> let's say 1 Hz
+  if (digitalRead(switchPin) == HIGH) {
+    
+      switchFlagOneHz = true;
+
+  } 
+
+  // else the switch is pressed and set to 10 Hz
+  else {
+    
+      switchFlagOneHz = false;
+    
+  }
 
 }
