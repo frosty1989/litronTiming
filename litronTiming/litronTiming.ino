@@ -18,6 +18,9 @@ long debounce = 200;   // the debounce time, increase if the output flickers
 // define the flag - set to false at start, variables changed in interrupt must be volatile
 volatile boolean PassThruMode = false;
 
+// flag for LAMP SYNC interrupt signal
+volatile boolean lampSyncRising = false;
+
 // pulse width
 int pulseWidth = 0;
 
@@ -68,6 +71,14 @@ void gate() {
 
   // DO is rising branch
     if (FastGPIO::Pin<2>::isInputHigh()) {
+
+      // wait for the rising edge of the lamp signal - use fastgpio
+      // this is kinda a synchronizing condition for the second interrupt 
+      // the same way could be probably used for the falling branch of the interrupt
+      while (!FastGPIO::Pin<2>::isInputHigh()) {
+          // Do nothing
+      }
+      and directly after 
 
       // redirect the LAMP SYNC signal to output - use a flag
       PassThruMode = true;
