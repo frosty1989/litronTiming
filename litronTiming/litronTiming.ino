@@ -5,7 +5,7 @@
 int switchPin = 12;
 
 // swichFlag for interrupts - it does not matter how you initialize it
-volatile boolean switchFlagOneHz = false;
+volatile boolean switchFlagSingleShot = false;
 
 // define the flag - set to false at start, variables changed in interrupt must be volatile
 volatile boolean PassThruMode = false;
@@ -49,10 +49,10 @@ void output() {
   
       if(PassThruMode) {
 
-        // here comes the 1 Hz or 10 Hz selector
+        // here comes the single shot or continous selector
 
-        // 10 Hz
-        if(switchFlagOneHz == false) {
+        // continuous
+        if(switchFlagSingleShot == false) {
         
           // I think I cannot use the pin variable here
           FastGPIO::Pin<9>::setOutputValueHigh();
@@ -61,7 +61,7 @@ void output() {
 
         }
 
-        else if(switchFlagOneHz == true) {
+        else if(switchFlagSingleShot == true) {
           
         // output only one pulse and set passThruMode to false
         FastGPIO::Pin<9>::setOutputValueHigh();
@@ -109,17 +109,17 @@ void gate() {
 
 void loop() {
 
-  // unpressed switch is HIGH --> let's say 1 Hz
+  // unpressed switch is HIGH --> let's say it is single shot
   if (digitalRead(switchPin) == HIGH) {
     
-      switchFlagOneHz = true;
+      switchFlagSingleShot = true;
 
   } 
 
-  // else the switch is pressed and set to 10 Hz
+  // else the switch is pressed and set to continuous
   else {
     
-      switchFlagOneHz = false;
+      switchFlagSingleShot = false;
     
   }
 
